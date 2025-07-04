@@ -91,7 +91,7 @@ items:
           class: BodyItem
           is_checked: true
           data:
-            file: "/home/mituk/agent-system/Genesis/genesis/assets/urdf/go2/urdf/go2.urdf"
+            file: "${AGENT_SYSTEM}/Genesis/genesis/assets/urdf/go2/urdf/go2.urdf"
             format: URDF
             rootPosition: [ 0, 1, 0.42 ]
             rootAttitude: [
