@@ -3,103 +3,103 @@
     <visual>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage.obj" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage.obj" />
       </geometry>
     </visual>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-cliff-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-cliff-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-curve-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-curve-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal0-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal0-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-2.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-2.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-3.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-goal1-3.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-intermediate_step-2.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-intermediate_step-2.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-intermediate_step-3.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-intermediate_step-3.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-slope-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-slope-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-stair-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-stair-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-start0-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-start0-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-start1-2.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-start1-2.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-1.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-2.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-2.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-3.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-3.STL" />
       </geometry>
     </collision>
     <collision>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-4.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/field2023_athletics-step_right-4.STL" />
       </geometry>
     </collision>
   </link>
@@ -108,7 +108,7 @@
     <visual>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame1.obj" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame1.obj" />
       </geometry>
     </visual>
   </link>
@@ -122,7 +122,7 @@
       <origin xyz="0 0 -0.495" />
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
       </geometry>
     </visual>
     <collision>
@@ -142,14 +142,14 @@
     <child link="Link1" />
     <origin xyz="1.7859 -1.380 1.050" />
     <axis xyz="0 1 0" />
-    <limit effort="100" velocity="1.0" lower="${radians(-90)}" upper="${radians(90)}" />
+    <limit effort="100" velocity="1.0" lower="-1.5707" upper="1.5707" />
   </joint>
 
   <link name="Prop2">
     <visual>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame2.obj" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame2.obj" />
       </geometry>
     </visual>
   </link>
@@ -163,7 +163,7 @@
       <origin xyz="0 0 -0.495" />
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
       </geometry>
     </visual>
     <collision>
@@ -183,14 +183,14 @@
     <child link="Link2" />
     <origin xyz="1.7859 -0.63486 1.050" />
     <axis xyz="0 1 0" />
-    <limit effort="100" velocity="1.0" lower="${radians(-90)}" upper="${radians(90)}" />
+    <limit effort="100" velocity="1.0" lower="-1.5707" upper="1.5707" />
   </joint>
 
   <link name="Prop3">
     <visual>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame3.obj" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame3.obj" />
       </geometry>
     </visual>
   </link>
@@ -204,7 +204,7 @@
       <origin xyz="0 0 -0.495" />
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
       </geometry>
     </visual>
     <collision>
@@ -224,14 +224,14 @@
     <child link="Link3" />
     <origin xyz="3.7859 -1.380 1.050" />
     <axis xyz="0 1 0" />
-    <limit effort="100" velocity="1.0" lower="${radians(-90)}" upper="${radians(90)}" />
+    <limit effort="100" velocity="1.0" lower="-1.5707" upper="1.5707" />
   </joint>
 
   <link name="Prop4">
     <visual>
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame4.obj" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/2023_hvac_stage_frame4.obj" />
       </geometry>
     </visual>
   </link>
@@ -245,7 +245,7 @@
       <origin xyz="0 0 -0.495" />
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/link1.STL" />
       </geometry>
     </visual>
     <collision>
@@ -265,7 +265,7 @@
     <child link="Link4" />
     <origin xyz="3.7859 -0.63486 1.050" />
     <axis xyz="0 1 0" />
-    <limit effort="100" velocity="1.0" lower="${radians(-90)}" upper="${radians(90)}" />
+    <limit effort="100" velocity="1.0" lower="-1.5707" upper="1.5707" />
   </joint>
 
   <link name="MovablePlate">
@@ -273,7 +273,7 @@
       <origin xyz="1.0 0.35 0" />
       <geometry>
         <mesh
-          filename="file://../../../../choreonoid/share/choreonoid-2.2/model/field2023/movable_plate.STL" />
+          filename="../../../../choreonoid/share/choreonoid-2.2/model/field2023/movable_plate.STL" />
       </geometry>
     </visual>
     <collision>
@@ -293,7 +293,7 @@
     <child link="MovablePlate" />
     <origin xyz="0 0.02 -0.99" />
     <axis xyz="0 1 0" />
-    <limit effort="100" velocity="1.0" lower="${radians(-90)}" upper="${radians(90)}" />
+    <limit effort="100" velocity="1.0" lower="-1.5707" upper="1.5707" />
   </joint> -->
   <joint name="MovablePlate_joint1" type="fixed">
     <parent link="Prop1" />
