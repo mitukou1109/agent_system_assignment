@@ -292,6 +292,10 @@ class Go2Env(rsl_rl.env.VecEnv):
             self.episode_sums[key][envs_idx] = 0.0
 
     # ------------ reward functions----------------
+    def _reward_lin_vel_xy(self):
+        # Reward x and y axis base linear velocity
+        return torch.sum(torch.square(self.base_lin_vel[:, :2]), dim=1)
+
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
         return torch.square(self.base_lin_vel[:, 2])
