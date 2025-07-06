@@ -309,7 +309,10 @@ class Go2Env(rsl_rl.env.VecEnv):
         return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
 
     def _reward_dist_to_goal(self):
-        # Penalize distance to goal
-        return torch.square(
-            self.base_pos[:, 0] - self.env_cfg["goal_pos"][0]
-        ) + torch.square(self.base_pos[:, 1] - self.env_cfg["goal_pos"][1])
+        # Reward distance to goal
+        return (
+            math.pow(self.env_cfg["goal_pos"][0], 2)
+            + math.pow(self.env_cfg["goal_pos"][1], 2)
+            - torch.square(self.base_pos[:, 0] - self.env_cfg["goal_pos"][0])
+            - torch.square(self.base_pos[:, 1] - self.env_cfg["goal_pos"][1])
+        )
