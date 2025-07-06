@@ -15,6 +15,7 @@ class Go2Env(rsl_rl.env.VecEnv):
         env_cfg,
         obs_cfg,
         reward_cfg,
+        command_cfg,
         show_viewer=False,
         device="cuda",
     ):
@@ -32,6 +33,7 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.env_cfg = env_cfg
         self.obs_cfg = obs_cfg
         self.reward_cfg = reward_cfg
+        self.command_cfg = command_cfg
 
         self.obs_scales = obs_cfg["obs_scales"]
         self.reward_scales = reward_cfg["reward_scales"]
@@ -132,6 +134,24 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.episode_length_buf = torch.zeros(
             (self.num_envs,), device=self.device, dtype=gs.tc_int
         )
+        self.commands = torch.tensor(
+            [
+                self.command_cfg["lin_vel_x"],
+                self.command_cfg["lin_vel_y"],
+                self.command_cfg["ang_vel"],
+            ],
+            device=self.device,
+            dtype=gs.tc_float,
+        ).repeat(self.num_envs, 1)
+        self.commands_scale = torch.tensor(
+            [
+                self.obs_scales["lin_vel"],
+                self.obs_scales["lin_vel"],
+                self.obs_scales["ang_vel"],
+            ],
+            device=self.device,
+            dtype=gs.tc_float,
+        )
         self.actions = torch.zeros(
             (self.num_envs, self.num_actions), device=self.device, dtype=gs.tc_float
         )
@@ -225,6 +245,7 @@ class Go2Env(rsl_rl.env.VecEnv):
             [
                 self.base_ang_vel * self.obs_scales["ang_vel"],  # 3
                 self.projected_gravity,  # 3
+                self.commands * self.commands_scale,  # 3
                 (self.dof_pos - self.default_dof_pos)
                 * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
@@ -292,9 +313,17 @@ class Go2Env(rsl_rl.env.VecEnv):
             self.episode_sums[key][envs_idx] = 0.0
 
     # ------------ reward functions----------------
-    def _reward_lin_vel_xy(self):
-        # Reward x and y axis base linear velocity
-        return torch.sum(torch.square(self.base_lin_vel[:, :2]), dim=1)
+    def _reward_tracking_lin_vel(self):
+        # Reward tracking of linear velocity commands (x and y)
+        lin_vel_error = torch.sum(
+            torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1
+        )
+        return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
+
+    def _reward_tracking_ang_vel(self):
+        # Reward tracking of angular velocity commands (yaw)
+        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
+        return torch.exp(-ang_vel_error / self.reward_cfg["tracking_sigma"])
 
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
