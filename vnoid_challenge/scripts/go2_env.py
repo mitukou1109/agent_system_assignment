@@ -194,12 +194,11 @@ class Go2Env(rsl_rl.env.VecEnv):
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
         self.reset_buf |= (
-            torch.abs(self.base_euler[:, 1])
-            > self.env_cfg["termination_if_pitch_greater_than"]
-        )
-        self.reset_buf |= (
             torch.abs(self.base_euler[:, 0])
             > self.env_cfg["termination_if_roll_greater_than"]
+        )
+        self.reset_buf |= (
+            self.base_pos[:, 2] < self.env_cfg["termination_if_z_smaller_than"]
         )
 
         time_out_idx = (
