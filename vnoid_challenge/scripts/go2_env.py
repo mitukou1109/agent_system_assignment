@@ -274,9 +274,9 @@ class Go2Env(rsl_rl.env.VecEnv):
         # compute observations
         self.obs_buf = torch.cat(
             [
+                self.base_lin_vel * self.obs_scales["lin_vel"],  # 3
                 self.base_ang_vel * self.obs_scales["ang_vel"],  # 3
                 self.projected_gravity,  # 3
-                self.commands * self.commands_scale,  # 3
                 (self.dof_pos - self.default_dof_pos)
                 * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
