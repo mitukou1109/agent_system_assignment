@@ -20,9 +20,8 @@ class Go2Env(rsl_rl.env.VecEnv):
         reward_cfg,
         command_cfg,
         show_viewer=False,
-        device="cuda",
     ):
-        self.device = torch.device(device)
+        self.device = gs.device
 
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
@@ -50,7 +49,7 @@ class Go2Env(rsl_rl.env.VecEnv):
                 camera_lookat=(1.0, 0.0, 0.3),
                 camera_fov=40,
             ),
-            vis_options=gs.options.VisOptions(n_rendered_envs=1),
+            vis_options=gs.options.VisOptions(rendered_envs_idx=list(range(1))),
             rigid_options=gs.options.RigidOptions(
                 dt=self.dt,
                 constraint_solver=gs.constraint_solver.Newton,
@@ -76,10 +75,10 @@ class Go2Env(rsl_rl.env.VecEnv):
 
         # add robot
         self.base_init_pos = torch.tensor(
-            self.env_cfg["base_init_pos"], device=self.device
+            self.env_cfg["base_init_pos"], device=gs.device
         )
         self.base_init_quat = torch.tensor(
-            self.env_cfg["base_init_quat"], device=self.device
+            self.env_cfg["base_init_quat"], device=gs.device
         )
         self.inv_base_init_quat = genesis.utils.geom.inv_quat(self.base_init_quat)
         self.robot = self.scene.add_entity(
@@ -114,14 +113,18 @@ class Go2Env(rsl_rl.env.VecEnv):
             cam.attach(self.robot.get_link("base"), robot_cam_offset_T, nenv)
 
         # names to indices
-        self.motor_dofs = [
-            self.robot.get_joint(name).dof_idx_local
-            for name in self.env_cfg["dof_names"]
+        self.motors_dof_idx = [
+            self.robot.get_joint(name).dofs_idx_local[0]
+            for name in self.env_cfg["joint_names"]
         ]
 
         # PD control parameters
-        self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motor_dofs)
-        self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motor_dofs)
+        self.robot.set_dofs_kp(
+            [self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx
+        )
+        self.robot.set_dofs_kv(
+            [self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx
+        )
 
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
@@ -129,21 +132,21 @@ class Go2Env(rsl_rl.env.VecEnv):
             self.reward_scales[name] *= self.dt
             self.reward_functions[name] = getattr(self, "_reward_" + name)
             self.episode_sums[name] = torch.zeros(
-                (self.num_envs,), device=self.device, dtype=gs.tc_float
+                (self.num_envs,), device=gs.device, dtype=gs.tc_float
             )
 
         # initialize buffers
         self.base_lin_vel = torch.zeros(
-            (self.num_envs, 3), device=self.device, dtype=gs.tc_float
+            (self.num_envs, 3), device=gs.device, dtype=gs.tc_float
         )
         self.base_ang_vel = torch.zeros(
-            (self.num_envs, 3), device=self.device, dtype=gs.tc_float
+            (self.num_envs, 3), device=gs.device, dtype=gs.tc_float
         )
         self.projected_gravity = torch.zeros(
-            (self.num_envs, 3), device=self.device, dtype=gs.tc_float
+            (self.num_envs, 3), device=gs.device, dtype=gs.tc_float
         )
         self.global_gravity = torch.tensor(
-            [0.0, 0.0, -1.0], device=self.device, dtype=gs.tc_float
+            [0.0, 0.0, -1.0], device=gs.device, dtype=gs.tc_float
         ).repeat(self.num_envs, 1)
         self.camera_image = torch.zeros(
             (self.num_envs, self.robot_cams[0].res[0] * self.robot_cams[0].res[1] * 3),
@@ -151,16 +154,14 @@ class Go2Env(rsl_rl.env.VecEnv):
             dtype=gs.tc_int,
         )
         self.obs_buf = torch.zeros(
-            (self.num_envs, self.num_obs), device=self.device, dtype=gs.tc_float
+            (self.num_envs, self.num_obs), device=gs.device, dtype=gs.tc_float
         )
         self.rew_buf = torch.zeros(
-            (self.num_envs,), device=self.device, dtype=gs.tc_float
+            (self.num_envs,), device=gs.device, dtype=gs.tc_float
         )
-        self.reset_buf = torch.ones(
-            (self.num_envs,), device=self.device, dtype=gs.tc_int
-        )
+        self.reset_buf = torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_int)
         self.episode_length_buf = torch.zeros(
-            (self.num_envs,), device=self.device, dtype=gs.tc_int
+            (self.num_envs,), device=gs.device, dtype=gs.tc_int
         )
         self.commands = torch.tensor(
             [
@@ -168,7 +169,7 @@ class Go2Env(rsl_rl.env.VecEnv):
                 self.command_cfg["lin_vel_y"],
                 self.command_cfg["ang_vel"],
             ],
-            device=self.device,
+            device=gs.device,
             dtype=gs.tc_float,
         ).repeat(self.num_envs, 1)
         self.commands_scale = torch.tensor(
@@ -177,31 +178,32 @@ class Go2Env(rsl_rl.env.VecEnv):
                 self.obs_scales["lin_vel"],
                 self.obs_scales["ang_vel"],
             ],
-            device=self.device,
+            device=gs.device,
             dtype=gs.tc_float,
         )
         self.actions = torch.zeros(
-            (self.num_envs, self.num_actions), device=self.device, dtype=gs.tc_float
+            (self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float
         )
         self.last_actions = torch.zeros_like(self.actions)
         self.dof_pos = torch.zeros_like(self.actions)
         self.dof_vel = torch.zeros_like(self.actions)
         self.last_dof_vel = torch.zeros_like(self.actions)
         self.base_pos = torch.zeros(
-            (self.num_envs, 3), device=self.device, dtype=gs.tc_float
+            (self.num_envs, 3), device=gs.device, dtype=gs.tc_float
         )
         self.base_quat = torch.zeros(
-            (self.num_envs, 4), device=self.device, dtype=gs.tc_float
+            (self.num_envs, 4), device=gs.device, dtype=gs.tc_float
         )
         self.default_dof_pos = torch.tensor(
             [
                 self.env_cfg["default_joint_angles"][name]
-                for name in self.env_cfg["dof_names"]
+                for name in self.env_cfg["joint_names"]
             ],
-            device=self.device,
+            device=gs.device,
             dtype=gs.tc_float,
         )
         self.extras = dict()  # extra information for logging
+        self.extras["observations"] = dict()
 
     def step(self, actions):
         self.actions = torch.clip(
@@ -213,7 +215,7 @@ class Go2Env(rsl_rl.env.VecEnv):
         target_dof_pos = (
             exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
         )
-        self.robot.control_dofs_position(target_dof_pos, self.motor_dofs)
+        self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -239,8 +241,8 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.projected_gravity = genesis.utils.geom.transform_by_quat(
             self.global_gravity, inv_base_quat
         )
-        self.dof_pos[:] = self.robot.get_dofs_position(self.motor_dofs)
-        self.dof_vel[:] = self.robot.get_dofs_velocity(self.motor_dofs)
+        self.dof_pos[:] = self.robot.get_dofs_position(self.motors_dof_idx)
+        self.dof_vel[:] = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
@@ -258,7 +260,7 @@ class Go2Env(rsl_rl.env.VecEnv):
             .flatten()
         )
         self.extras["time_outs"] = torch.zeros_like(
-            self.reset_buf, device=self.device, dtype=gs.tc_float
+            self.reset_buf, device=gs.device, dtype=gs.tc_float
         )
         self.extras["time_outs"][time_out_idx] = 1.0
 
@@ -289,15 +291,18 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.last_actions[:] = self.actions[:]
         self.last_dof_vel[:] = self.dof_vel[:]
 
-        return self.obs_buf, None, self.rew_buf, self.reset_buf, self.extras
+        self.extras["observations"]["critic"] = self.obs_buf
+
+        return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
     def reset(self):
         self.reset_buf[:] = True
-        self.reset_idx(torch.arange(self.num_envs, device=self.device))
+        self.reset_idx(torch.arange(self.num_envs, device=gs.device))
         return self.obs_buf, None
 
     def get_observations(self):
-        return self.obs_buf
+        self.extras["observations"]["critic"] = self.obs_buf
+        return self.obs_buf, self.extras
 
     def get_privileged_observations(self):
         return None
@@ -311,7 +316,7 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.dof_vel[envs_idx] = 0.0
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
-            dofs_idx_local=self.motor_dofs,
+            dofs_idx_local=self.motors_dof_idx,
             zero_velocity=True,
             envs_idx=envs_idx,
         )
