@@ -1,9 +1,12 @@
+import concurrent.futures
 import math
 import os
 
 import ament_index_python.packages
 import genesis as gs
 import genesis.utils.geom
+import genesis.vis.camera
+import numpy as np
 import rsl_rl.env
 import torch
 
@@ -87,8 +90,28 @@ class Go2Env(rsl_rl.env.VecEnv):
             ),
         )
 
+        self.robot_cams = [
+            self.scene.add_camera(
+                res=(16, 16),
+                fov=120,
+                GUI=show_viewer,
+            )
+            for _ in range(num_envs)
+        ]
+
         # build
         self.scene.build(n_envs=num_envs)
+
+        robot_cam_offset_T = np.array(
+            [
+                [0.966, 0.0, -0.259, 0.4],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.259, 0.0, 0.966, -0.05],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
+        for nenv, cam in enumerate(self.robot_cams):
+            cam.attach(self.robot.get_link("base"), robot_cam_offset_T, nenv)
 
         # names to indices
         self.motor_dofs = [
@@ -122,6 +145,11 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.global_gravity = torch.tensor(
             [0.0, 0.0, -1.0], device=self.device, dtype=gs.tc_float
         ).repeat(self.num_envs, 1)
+        self.camera_image = torch.zeros(
+            (self.num_envs, self.robot_cams[0].res[0] * self.robot_cams[0].res[1] * 3),
+            device=gs.device,
+            dtype=gs.tc_int,
+        )
         self.obs_buf = torch.zeros(
             (self.num_envs, self.num_obs), device=self.device, dtype=gs.tc_float
         )
@@ -188,6 +216,9 @@ class Go2Env(rsl_rl.env.VecEnv):
         self.robot.control_dofs_position(target_dof_pos, self.motor_dofs)
         self.scene.step()
 
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(self._render_camera, enumerate(self.robot_cams))
+
         # update buffers
         self.episode_length_buf += 1
         self.base_pos[:] = self.robot.get_pos()
@@ -249,6 +280,7 @@ class Go2Env(rsl_rl.env.VecEnv):
                 (self.dof_pos - self.default_dof_pos)
                 * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
+                self.camera_image * self.obs_scales["camera_image"],  # 16 * 16 * 3
                 self.actions,  # 12
             ],
             axis=-1,
@@ -311,6 +343,13 @@ class Go2Env(rsl_rl.env.VecEnv):
                 / self.env_cfg["episode_length_s"]
             )
             self.episode_sums[key][envs_idx] = 0.0
+
+    def _render_camera(self, cam_with_idx: tuple[int, genesis.vis.camera.Camera]):
+        idx, cam = cam_with_idx
+        cam_image, *_ = cam.render()
+        self.camera_image[idx, :] = (
+            torch.from_numpy(cam_image.copy()).to(gs.device).to(gs.tc_int)
+        ).flatten()
 
     # ------------ reward functions----------------
     def _reward_tracking_lin_vel(self):
