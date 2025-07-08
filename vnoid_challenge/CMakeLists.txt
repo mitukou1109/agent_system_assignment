@@ -8,6 +8,10 @@ ament_auto_find_build_dependencies()
 choreonoid_add_simple_controller(InvertedPendulumController
   src/inverted_pendulum_controller.cpp
 )
+ament_target_dependencies(InvertedPendulumController
+  rclcpp
+  std_msgs
+)
 
 ament_auto_package(
   INSTALL_TO_SHARE

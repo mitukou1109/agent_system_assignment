@@ -1,12 +1,34 @@
 #include <cnoid/Imu>
-#include <cnoid/Joystick>
 #include <cnoid/SimpleController>
-#include <iostream>
-#include <optional>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float32.hpp>
 
+namespace vnoid_challenge
+{
 class InvertedPendulumController : public cnoid::SimpleController
 {
  public:
+  bool configure(cnoid::SimpleControllerConfig* config) override
+  {
+    node_ = std::make_shared<rclcpp::Node>(config->controllerName());
+    wheel_velocity_command_subs_.left()
+        = node_->create_subscription<std_msgs::msg::Float32>(
+            "wheel_velocity_command/left", 1,
+            [this](const std_msgs::msg::Float32::ConstSharedPtr msg)
+            { wheel_velocity_command_.left() = msg->data; });
+    wheel_velocity_command_subs_.right()
+        = node_->create_subscription<std_msgs::msg::Float32>(
+            "wheel_velocity_command/right", 1,
+            [this](const std_msgs::msg::Float32::ConstSharedPtr msg)
+            { wheel_velocity_command_.right() = msg->data; });
+
+    executor_
+        = std::make_unique<rclcpp::executors::StaticSingleThreadedExecutor>();
+    executor_->add_node(node_);
+
+    return true;
+  }
+
   bool initialize(cnoid::SimpleControllerIO* io) override
   {
     for (auto& wheel : wheels_)
@@ -24,48 +46,67 @@ class InvertedPendulumController : public cnoid::SimpleController
 
   bool control() override
   {
-    joystick_.readCurrentState();
+    executor_->spin_some();
 
-    const auto translational_velocity
-        = -joystick_.getPosition(cnoid::Joystick::L_STICK_V_AXIS)
-          * TRANSLATIONAL_VELOCITY_FACTOR;
-    const auto rotational_velocity
-        = joystick_.getPosition(cnoid::Joystick::L_STICK_H_AXIS)
-          * ROTATIONAL_VELOCITY_FACTOR;
-
-    wheels_[LEFT].link->dq_target()
-        = (translational_velocity + TURNING_RADIUS * rotational_velocity)
-          / WHEEL_RADIUS;
-    wheels_[RIGHT].link->dq_target()
-        = (translational_velocity - TURNING_RADIUS * rotational_velocity)
-          / WHEEL_RADIUS;
+    wheels_.left().link->dq_target() = wheel_velocity_command_.left();
+    wheels_.right().link->dq_target() = wheel_velocity_command_.right();
 
     return true;
   }
 
- private:
-  enum Direction
+  void unconfigure() override
   {
-    LEFT = 0,
-    RIGHT = 1
-  };
+    if (!executor_)
+    {
+      return;
+    }
 
+    executor_->cancel();
+    executor_->remove_node(node_);
+    executor_.reset();
+  }
+
+ private:
   struct Link
   {
     cnoid::LinkPtr link;
     std::string name;
   };
 
-  static constexpr double TRANSLATIONAL_VELOCITY_FACTOR = 1.0;
-  static constexpr double ROTATIONAL_VELOCITY_FACTOR = 1.0;
+  template <typename T>
+  class WheelSet
+  {
+   public:
+    WheelSet() {}
+    WheelSet(const T& left, const T& right) : values_{left, right} {}
+
+    T& left() { return values_[0]; }
+    T& right() { return values_[1]; }
+
+    const T& left() const { return values_[0]; }
+    const T& right() const { return values_[1]; }
+
+    typename std::array<T, 2>::iterator begin() { return values_.begin(); }
+    typename std::array<T, 2>::iterator end() { return values_.end(); }
+
+   private:
+    std::array<T, 2> values_;
+  };
 
   static constexpr double WHEEL_RADIUS = 0.1;
-  static constexpr double TURNING_RADIUS = 0.2;
+  static constexpr double TREAD = 0.4;
 
-  std::array<Link, 2> wheels_{Link{.name = "L_WHEEL"}, Link{.name = "R_WHEEL"}};
-  cnoid::Joystick joystick_;
-
+  WheelSet<Link> wheels_{{.name = "L_WHEEL"}, {.name = "R_WHEEL"}};
   cnoid::ImuPtr imu_;
-};
 
-CNOID_IMPLEMENT_SIMPLE_CONTROLLER_FACTORY(InvertedPendulumController)
+  WheelSet<float> wheel_velocity_command_;
+
+  rclcpp::Node::SharedPtr node_;
+  WheelSet<rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr>
+      wheel_velocity_command_subs_;
+  rclcpp::executors::StaticSingleThreadedExecutor::UniquePtr executor_;
+};
+}  // namespace vnoid_challenge
+
+CNOID_IMPLEMENT_SIMPLE_CONTROLLER_FACTORY(
+    vnoid_challenge::InvertedPendulumController)
