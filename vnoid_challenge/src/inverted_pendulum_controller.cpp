@@ -2,6 +2,7 @@
 #include <cnoid/SimpleController>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float32.hpp>
 
 namespace vnoid_challenge
@@ -14,16 +15,18 @@ class InvertedPendulumController : public cnoid::SimpleController
     node_ = std::make_shared<rclcpp::Node>(config->controllerName());
     imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(
         "imu/data", rclcpp::SensorDataQoS());
-    wheel_velocity_command_subs_.left()
+    joint_states_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>(
+        "joint_states", rclcpp::SensorDataQoS());
+    wheel_torque_command_subs_.left()
         = node_->create_subscription<std_msgs::msg::Float32>(
-            "wheel_velocity_command/left", 1,
+            "wheel_torque_command/left", 1,
             [this](const std_msgs::msg::Float32::ConstSharedPtr msg)
-            { wheel_velocity_command_.left() = msg->data; });
-    wheel_velocity_command_subs_.right()
+            { wheel_torque_command_.left() = msg->data; });
+    wheel_torque_command_subs_.right()
         = node_->create_subscription<std_msgs::msg::Float32>(
-            "wheel_velocity_command/right", 1,
+            "wheel_torque_command/right", 1,
             [this](const std_msgs::msg::Float32::ConstSharedPtr msg)
-            { wheel_velocity_command_.right() = msg->data; });
+            { wheel_torque_command_.right() = msg->data; });
 
     executor_
         = std::make_unique<rclcpp::executors::StaticSingleThreadedExecutor>();
@@ -37,12 +40,25 @@ class InvertedPendulumController : public cnoid::SimpleController
     for (auto& wheel : wheels_)
     {
       wheel.link = io->body()->link(wheel.name);
-      wheel.link->setActuationMode(cnoid::Link::JointVelocity);
+      wheel.link->setActuationMode(cnoid::Link::JointTorque);
       io->enableOutput(wheel.link);
+      io->enableInput(wheel.link,
+                      cnoid::Link::JointAngle | cnoid::Link::JointVelocity);
     }
 
     imu_ = io->body()->findDevice<cnoid::Imu>("IMU");
     io->enableInput(imu_);
+
+    control_period_ = io->timeStep();
+
+    body_pitch_angle_ = 0;
+    body_pitch_rate_ = 0;
+
+    wheel_torque_command_.left() = 0;
+    wheel_torque_command_.right() = 0;
+
+    wheels_.left().link->u() = 0;
+    wheels_.right().link->u() = 0;
 
     return true;
   }
@@ -50,6 +66,9 @@ class InvertedPendulumController : public cnoid::SimpleController
   bool control() override
   {
     executor_->spin_some();
+
+    body_pitch_rate_ = imu_->w().y();
+    body_pitch_angle_ += body_pitch_rate_ * control_period_;
 
     sensor_msgs::msg::Imu imu_msg;
     imu_msg.header.stamp = node_->now();
@@ -63,8 +82,18 @@ class InvertedPendulumController : public cnoid::SimpleController
     imu_msg.orientation_covariance[0] = -1;
     imu_pub_->publish(imu_msg);
 
-    wheels_.left().link->dq_target() = wheel_velocity_command_.left();
-    wheels_.right().link->dq_target() = wheel_velocity_command_.right();
+    sensor_msgs::msg::JointState joint_states_msg;
+    joint_states_msg.header.stamp = node_->now();
+    joint_states_msg.header.frame_id = "BASE_LINK";
+    joint_states_msg.name = {"BODY", "L_WHEEL", "R_WHEEL"};
+    joint_states_msg.position = {body_pitch_angle_, wheels_.left().link->q(),
+                                 wheels_.right().link->q()};
+    joint_states_msg.velocity = {body_pitch_rate_, wheels_.left().link->dq(),
+                                 wheels_.right().link->dq()};
+    joint_states_pub_->publish(joint_states_msg);
+
+    wheels_.left().link->u() = wheel_torque_command_.left();
+    wheels_.right().link->u() = wheel_torque_command_.right();
 
     return true;
   }
@@ -108,18 +137,20 @@ class InvertedPendulumController : public cnoid::SimpleController
     std::array<T, 2> values_;
   };
 
-  static constexpr double WHEEL_RADIUS = 0.1;
-  static constexpr double TREAD = 0.4;
-
   WheelSet<Link> wheels_{{.name = "L_WHEEL"}, {.name = "R_WHEEL"}};
   cnoid::ImuPtr imu_;
+  double control_period_;
 
-  WheelSet<float> wheel_velocity_command_;
+  double body_pitch_angle_;
+  double body_pitch_rate_;
+
+  WheelSet<float> wheel_torque_command_;
 
   rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub_;
   WheelSet<rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr>
-      wheel_velocity_command_subs_;
+      wheel_torque_command_subs_;
   rclcpp::executors::StaticSingleThreadedExecutor::UniquePtr executor_;
 };
 }  // namespace vnoid_challenge
