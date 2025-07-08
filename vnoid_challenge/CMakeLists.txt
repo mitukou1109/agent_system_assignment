@@ -14,8 +14,18 @@ ament_target_dependencies(InvertedPendulumController
   std_msgs
 )
 
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/balance_controller.cpp
+)
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "vnoid_challenge::BalanceController"
+  EXECUTABLE balance_controller_node
+)
+
 ament_auto_package(
   INSTALL_TO_SHARE
+    config
+    launch
     model
     project
 )
