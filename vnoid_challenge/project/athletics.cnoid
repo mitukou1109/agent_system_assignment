@@ -22,7 +22,7 @@ items:
           class: BodyItem
           is_checked: true
           data:
-            file: "${SHARE}/model/field2023/field2023_athletics.body"
+            file: "${VNOID_CHALLENGE_SHARE}/model/field2023_athletics.urdf"
             format: CHOREONOID-BODY
             rootPosition: [ 0, 0, 0 ]
             rootAttitude: [
@@ -121,7 +121,7 @@ items:
               data:
                 isNoDelayMode: false
                 controllerOptions: ""
-                controller: "InferenceController"
+                controller: "Go2Controller"
                 base_directory: "Controller directory"
                 reloading: false
                 export_symbols: false
@@ -410,12 +410,12 @@ viewAreas:
     contents:
       type: splitter
       orientation: horizontal
-      sizes: [ 323, 1522 ]
+      sizes: [ 333, 1571 ]
       children:
         -
           type: splitter
           orientation: vertical
-          sizes: [ 455, 455 ]
+          sizes: [ 484, 483 ]
           children:
             -
               type: pane
@@ -427,7 +427,7 @@ viewAreas:
         -
           type: splitter
           orientation: vertical
-          sizes: [ 649, 261 ]
+          sizes: [ 690, 277 ]
           children:
             -
               type: pane
@@ -436,7 +436,7 @@ viewAreas:
             -
               type: pane
               views: [ 4, 11, 12 ]
-              current: 12
+              current: 4
 layoutOfToolBars:
   rows:
     -
