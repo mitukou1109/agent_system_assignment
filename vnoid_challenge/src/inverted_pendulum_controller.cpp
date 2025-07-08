@@ -1,6 +1,7 @@
 #include <cnoid/Imu>
 #include <cnoid/SimpleController>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/float32.hpp>
 
 namespace vnoid_challenge
@@ -11,6 +12,8 @@ class InvertedPendulumController : public cnoid::SimpleController
   bool configure(cnoid::SimpleControllerConfig* config) override
   {
     node_ = std::make_shared<rclcpp::Node>(config->controllerName());
+    imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(
+        "imu/data", rclcpp::SensorDataQoS());
     wheel_velocity_command_subs_.left()
         = node_->create_subscription<std_msgs::msg::Float32>(
             "wheel_velocity_command/left", 1,
@@ -47,6 +50,18 @@ class InvertedPendulumController : public cnoid::SimpleController
   bool control() override
   {
     executor_->spin_some();
+
+    sensor_msgs::msg::Imu imu_msg;
+    imu_msg.header.stamp = node_->now();
+    imu_msg.header.frame_id = imu_->link()->name();
+    imu_msg.linear_acceleration.x = imu_->dv().x();
+    imu_msg.linear_acceleration.y = imu_->dv().y();
+    imu_msg.linear_acceleration.z = imu_->dv().z();
+    imu_msg.angular_velocity.x = imu_->w().x();
+    imu_msg.angular_velocity.y = imu_->w().y();
+    imu_msg.angular_velocity.z = imu_->w().z();
+    imu_msg.orientation_covariance[0] = -1;
+    imu_pub_->publish(imu_msg);
 
     wheels_.left().link->dq_target() = wheel_velocity_command_.left();
     wheels_.right().link->dq_target() = wheel_velocity_command_.right();
@@ -102,6 +117,7 @@ class InvertedPendulumController : public cnoid::SimpleController
   WheelSet<float> wheel_velocity_command_;
 
   rclcpp::Node::SharedPtr node_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   WheelSet<rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr>
       wheel_velocity_command_subs_;
   rclcpp::executors::StaticSingleThreadedExecutor::UniquePtr executor_;

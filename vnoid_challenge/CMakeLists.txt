@@ -10,6 +10,7 @@ choreonoid_add_simple_controller(InvertedPendulumController
 )
 ament_target_dependencies(InvertedPendulumController
   rclcpp
+  sensor_msgs
   std_msgs
 )
 
