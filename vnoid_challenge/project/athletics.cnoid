@@ -94,13 +94,13 @@ items:
           data:
             file: "${VNOID_CHALLENGE_SHARE}/model/InvertedPendulum.body"
             format: CHOREONOID-BODY
-            rootPosition: [ 0, 1, 0.1 ]
+            rootPosition: [ 0, 1, 0.08 ]
             rootAttitude: [
               1, 0, 0,
               0, 1, 0,
               0, 0, 1 ]
             jointDisplacements: [ 0, 0 ]
-            initialRootPosition: [ 0, 1, 0.1 ]
+            initialRootPosition: [ 0, 1, 0.08 ]
             initialRootAttitude: [
               1, 0, 0,
               0, 1, 0,
@@ -218,9 +218,9 @@ views:
       cameras:
         -
           camera: [ System, Perspective ]
-          eye: [ -7.60487, -22.0722, 5.88945 ]
-          direction: [ 0.594847, 0.779361, -0.196861 ]
-          up: [ 0.119439, 0.156488, 0.980431 ]
+          eye: [ -5.76086, -22.3239, 9.18473 ]
+          direction: [ 0.52996, 0.788219, -0.312815 ]
+          up: [ 0.174539, 0.259595, 0.949814 ]
         -
           camera: [ System, Orthographic ]
           isCurrent: true

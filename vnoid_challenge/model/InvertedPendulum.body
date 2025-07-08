@@ -6,7 +6,6 @@ rootLink: BASE_LINK
 
 links:
   - name: BASE_LINK
-    translation: [0, 0, 0]
     jointType: free
   - name: BODY
     parent: BASE_LINK
@@ -14,17 +13,17 @@ links:
     jointType: fixed
     elements:
       Transform:
-        translation: [0, 0, 0.275]
+        translation: [0, 0, 0.175]
         elements:
           RigidBody:
             centerOfMass: [0, 0, 0]
-            mass: 18.0
-            inertia: [1.68375, 0, 0, 1.59375, 0, 0.2775]
+            mass: 1.0
+            inertia: [0.0352, 0, 0, 0.0333, 0, 0.0085]
             elements:
               Shape:
                 geometry:
                   type: Box
-                  size: [0.125, 0.175, 0.5]
+                  size: [0.1, 0.15, 0.3]
                 appearance:
                   material:
                     diffuseColor: [0, 0.6, 0]
@@ -32,10 +31,10 @@ links:
                     shininess: 0.6
           IMU:
             name: IMU
-            translation: [0, 0, -0.275]
+            translation: [0, 0, -0.15]
   - name: R_WHEEL
     parent: BASE_LINK
-    translation: [0, -0.125, 0]
+    translation: [0, -0.1, 0]
     jointType: revolute
     jointAxis: Y
     jointId: 0
@@ -43,15 +42,15 @@ links:
       RigidBody:
         rotation: [0, 0, 1, 90]
         centerOfMass: [0, 0, 0]
-        mass: 1.0
-        inertia: [0.0027, 0, 0, 0.0027, 0, 0.005]
+        mass: 0.2
+        inertia: [0.000207, 0, 0, 0.000207, 0, 0.00036]
         elements:
           Shape:
             rotation: [[0, 1, 0, 90], [1, 0, 0, 90]]
             geometry:
               type: Cylinder
-              height: 0.05
-              radius: 0.1
+              height: 0.04
+              radius: 0.06
             appearance:
               material:
                 diffuseColor: [0.6, 0, 0]
@@ -59,7 +58,7 @@ links:
                 shininess: 0.6
   - name: L_WHEEL
     parent: BASE_LINK
-    translation: [0, 0.125, 0]
+    translation: [0, 0.1, 0]
     jointType: revolute
     jointAxis: Y
     jointId: 1

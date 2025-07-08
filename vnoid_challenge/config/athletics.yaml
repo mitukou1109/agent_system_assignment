@@ -1,7 +1,7 @@
 /balance_controller:
   ros__parameters:
-    wheel_radius: 0.1
-    wheel_tread: 0.25
-    wheel_inertia: 0.005
-    feedback_gain: [-42.9065, -7.2695]
+    wheel_radius: 0.06
+    wheel_tread: 0.2
+    wheel_inertia: 0.00036
+    feedback_gain: [-4.291, -0.647]
     control_rate: 50.0
