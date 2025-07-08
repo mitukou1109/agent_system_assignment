@@ -92,10 +92,8 @@ class InvertedPendulumController : public cnoid::SimpleController
                                  wheels_.right().link->dq()};
     joint_states_pub_->publish(joint_states_msg);
 
-    wheels_.left().link->u()
-        = std::clamp(wheel_torque_command_.left(), -1.0f, 1.0f);
-    wheels_.right().link->u()
-        = std::clamp(wheel_torque_command_.right(), -1.0f, 1.0f);
+    wheels_.left().link->u() = wheel_torque_command_.left();
+    wheels_.right().link->u() = wheel_torque_command_.right();
 
     return true;
   }
