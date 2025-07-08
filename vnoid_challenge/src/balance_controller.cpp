@@ -79,10 +79,10 @@ void BalanceController::control()
                                        + feedback_gain_[1] * body_pitch_rate_);
 
   const auto left_wheel_velocity_command
-      = (cmd_vel_.linear.x - wheel_tread_ / 2 * cmd_vel_.angular.z)
+      = -(cmd_vel_.linear.x + wheel_tread_ / 2 * cmd_vel_.angular.z)
         / (2 * wheel_radius_);
   const auto right_wheel_velocity_command
-      = (cmd_vel_.linear.x + wheel_tread_ / 2 * cmd_vel_.angular.z)
+      = -(cmd_vel_.linear.x - wheel_tread_ / 2 * cmd_vel_.angular.z)
         / (2 * wheel_radius_);
 
   const auto left_wheel_torque_command
